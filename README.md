@@ -1,5 +1,5 @@
 # Venafi Helper
-Indellient Venafi-Habitat helper package written in Go using the venafi/vcert SDK.
+Indellient Venafi-Habitat helper package using the venafi/vcert SDK.
 
 ## Setting up Venafi Helper Habitat Package
 
