@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Create dirs required by httpd package
+mkdir -p {{pkg.svc_data_path}}/htdocs
+mkdir -p {{pkg.svc_data_path}}/cgi-bin
+mkdir -p {{pkg.svc_var_path}}/logs
+
+# Move httpd package over to svc directory
+cp -a {{pkgPathFor "core/httpd"}}/* {{pkg.svc_var_path}}/
+
+echo "Done preparing httpd"

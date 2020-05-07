@@ -1,0 +1,17 @@
+# This file contains the variables needed for configuring the service
+# url: The url to your Venafi SDK endpoint (e.g. "https://bla.dev.lab.venafi.com/vedsdk")
+# user: The username you use to authenticate with the sdk
+# password: The password you use to authenticate with the sdk
+# cn: The common name of your certificate (e.g. "bla.example.com")
+# zone: The zone of your certificate (e.g. "Certificates\\\\Bla")
+# renew-threshold: The amount of days away from the expiry date to trigger a renewal request
+# expiry-check: The interval for checking how close the day is to the 'renew-threshold' date, in days
+
+[tpp]
+url = "my_url"
+user = "my_username"
+password = "my_password"
+cn = "my_common_name"
+zone = "my_zone"
+renew-threshold = 14
+expiry-check = 1

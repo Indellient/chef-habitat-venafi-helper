@@ -1,0 +1,12 @@
+# Use this file to templatize your application's native configuration files.
+# See the docs at https://www.habitat.sh/docs/create-packages-configure/.
+# You can safely delete this file if you don't need it.
+worker_processes = 1
+
+[events]
+worker_connections = 512
+
+[http.server]
+listen = 80
+ssl-listen = 443
+index = "index.html"

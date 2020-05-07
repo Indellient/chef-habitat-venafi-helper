@@ -1,0 +1,5 @@
+terraform.*
+.terraform*
+.config.ini
+results
+.DS_Store

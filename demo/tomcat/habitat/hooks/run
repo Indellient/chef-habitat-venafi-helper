@@ -1,0 +1,21 @@
+#!/bin/bash
+
+exec 2>&1
+
+echo "Starting Apache Tomcat"
+
+# Copy over fresh configs as Tomcat overwrites configs at restart
+cp -f {{pkg.svc_config_path}}/server.xml {{pkg.svc_var_path}}/tc/conf/server.xml
+cp -f {{pkg.svc_config_path}}/tomcat-users.xml {{pkg.svc_var_path}}/tc/conf/tomcat-users.xml
+cp -f {{pkg.svc_config_path}}/webapps_host-manager_META-INF_context.xml {{pkg.svc_var_path}}/tc/conf/webapps_host-manager_META-INF_context.xml
+
+# Copy over setenv.sh which allows tomcat to access core/tomcat-native (tomcat automatically hooks into setenv)
+cp {{pkg.svc_config_path}}/setenv.sh {{pkg.svc_var_path}}/tc/bin/setenv.sh
+
+# Remove sample html and add our own, copy new file over
+rm -rf {{pkg.svc_var_path}}/tc/webapps/ROOT/* 
+cp -r {{pkg.path}}/* {{pkg.svc_var_path}}/tc/webapps/ROOT/
+
+export TOMCAT_HOME="{{pkg.svc_var_path}}/tc"
+
+exec ${TOMCAT_HOME}/bin/catalina.sh run

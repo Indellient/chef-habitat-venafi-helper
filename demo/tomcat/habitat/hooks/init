@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cp -a {{pkgPathFor "core/tomcat8"}}/tc {{pkg.svc_var_path}}/
+
+echo "Done preparing TOMCAT_HOME"

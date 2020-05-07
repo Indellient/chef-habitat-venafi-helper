@@ -1,0 +1,26 @@
+#!/bin/sh
+# Start the Nginx server, passing it our bundled configuration file.
+export HAB_DOCKER_OPTS="-p 8080:80"
+
+root_dir="{{ pkg.svc_var_path }}/dist"
+mkdir $root_dir
+cp -r {{ pkg.path }}/* "$root_dir/"
+
+{{~#each bind.helper.members as |member|}}
+  fqdn="{{member.cfg.ssl-fqdn}}"
+  cert="{{member.cfg.ssl-cert}}"
+  key="{{member.cfg.ssl-key}}"
+  chain="{{member.cfg.ssl-chain}}"
+{{~/each}}
+
+# Export multiple variables into TOML for a one-time apply
+curr_date=$(exec date "+%s")
+toml_path="{{ pkg.svc_data_path }}/apply.toml"
+echo "[ssl]" > $toml_path
+echo "fqdn = \"$fqdn\"" >> $toml_path
+echo "cert = \"$cert\"" >> $toml_path
+echo "key = \"$key\"" >> $toml_path
+echo "chain = \"$chain\"" >> $toml_path
+hab config apply venafi-nginx-demo.default $curr_date $toml_path
+
+exec {{ pkgPathFor "core/nginx" }}/bin/nginx -c "{{ pkg.svc_config_path }}/nginx.conf" 2>&1

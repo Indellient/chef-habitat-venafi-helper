@@ -1,0 +1,12 @@
+#!/bin/bash
+
+exec 2>&1
+
+echo "Starting httpd"
+
+cp {{pkg.svc_config_path}}/httpd.conf {{pkg.svc_var_path}}/conf/httpd.conf
+
+rm -rf {{pkg.svc_var_path}}/htdocs/*
+cp -r {{pkg.path}}/* {{pkg.svc_var_path}}/htdocs/
+
+exec {{pkg.svc_var_path}}/bin/httpd -DFOREGROUND -f {{pkg.svc_var_path}}/conf/httpd.conf
