@@ -82,17 +82,16 @@ function check_expiry() {
     cert_json=$(curl -s -L \
             -H 'Content-Type: application/json' \
             -H 'X-Venafi-API-Key: '$tpp_token \
-            $TPP_URL/certificates)
+            $TPP_URL/certificates?cn=${COMMON_NAME})
     echo $cert_json
 
     valid_to=0
     while IFS="|" read -r dn x509; do
-        if [ "$dn" = "$CERT_ID" ]; then
+        if [ "$dn" = "\\VED\\Policy\\${CERTIFICATE_ZONE}\\${COMMON_NAME}" ]; then
             # Extract only the date portion, 'date' has a weird bug of breaking on ':' from a bash script
             valid_to=$(jq --raw-output '.ValidTo' <<< "$x509" | cut -c1-10)
         fi
     done< <(jq --raw-output '.Certificates[] | "\(.DN)|\(.X509)"' <<< "$cert_json")
-
 
     # Convert to seconds
     valid_to=$(exec date -d "$valid_to" +%s)
