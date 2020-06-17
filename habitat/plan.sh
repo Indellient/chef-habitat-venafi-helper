@@ -7,6 +7,7 @@ pkg_deps=(
   core/curl
   core/python2
   core/glibc
+  core/openssl
   core/cacerts
   core/jq-static
   indellient/vcert
