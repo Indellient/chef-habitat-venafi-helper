@@ -2,59 +2,55 @@
 exec 2>&1
 
 # Set credentials
-TPP_URL="{{ cfg.tpp.url }}"
-TPP_USER="{{ cfg.tpp.user }}"
-TPP_PASSWORD="{{ cfg.tpp.password }}"
-COMMON_NAME="{{ cfg.tpp.cn }}"
-CERTIFICATE_ZONE="{{ cfg.tpp.zone }}"
+{{#unless cfg.tpp.auth.url ~}}
+TPP_URL="{{ cfg.tpp.auth.url }}"
+TPP_USER="{{ cfg.tpp.auth.user }}"
+TPP_PASSWORD="{{ cfg.tpp.auth.password }}"
+{{/unless}}
+COMMON_NAME="{{ cfg.cn }}"
+{{#unless cfg.cloud.auth.apikey ~}}
+CLOUD_APIKEY="{{ cfg.cloud.auth.apikey }}"
+{{/unless}}
 
-# Set cert file
+# Set device information
+APP_INFO="{{ cfg.tpp.device.app-info }}"
+INSTANCE="{{ sys.hostname }}{{#if cfg.tpp.device.app-name ~}}:{{ cfg.tpp.device.app-name }}{{/if ~}}"
+{{#unless cfg.tpp.device.tls_address ~}}
+TLS_ADDRESS="{{ sys.ip }}:{{ cfg.tpp.device.tls_port }}"
+{{/unless}}
+{{#if cfg.tpp.device.tls_address ~}}
+TLS_ADDRESS="{{ cfg.tpp.device.tls_address }}:{{ cfg.tpp.device.tls_port }}"
+{{/if ~}}
+
+# Set certificate file names
 CERT_FILE="${COMMON_NAME}.cert"
 KEY_FILE="${COMMON_NAME}.key"
 CHAIN_FILE="${COMMON_NAME}.chain"
+ID_FILE="${COMMON_NAME}.id"
 
 # Set cert path
 CERT_PATH="{{pkg.svc_data_path}}/${CERT_FILE}"
 KEY_PATH="{{pkg.svc_data_path}}/${KEY_FILE}"
 CHAIN_PATH="{{pkg.svc_data_path}}/${CHAIN_FILE}"
-CERT_ID="\\\\VED\\\\Policy\\\\${CERTIFICATE_ZONE}\\\\${COMMON_NAME}"
-
-HOSTNAME="{{sys.hostname}}"
-
-# Set DN paths for device and app creation
-DEVICE_CREATION_DN="\\\\VED\\\\Policy\\\\Devices And Applications\\\\External\\\\${HOSTNAME}"
-APP_CREATION_DN="\\\\VED\\\\Policy\\\\Devices And Applications\\\\External\\\\${HOSTNAME}\\\\${COMMON_NAME}-{{sys.ip}}{{sys.hostname}}"
-
-RUN_ONCE=true
+ID_PATH="{{pkg.svc_data_path}}/${ID_FILE}"
 
 # Establish a CA
 SSL_CERT_FILE="{{pkgPathFor "core/cacerts"}}/ssl/certs/cacert.pem"
 export SSL_CERT_FILE
 
+# https://support.venafi.com/hc/en-us/articles/217991528-Introducing-VCert-API-Abstraction-for-DevOps
 function enroll_new_cert() {
-    # Enroll a new SSL cert
-    exec vcert enroll -no-prompt \
-        -tpp-url ${TPP_URL} \
-        -tpp-user ${TPP_USER} \
-        -tpp-password ${TPP_PASSWORD} \
-        -cert-file ${CERT_PATH} \
-        -key-file ${KEY_PATH} \
-        -chain-file ${CHAIN_PATH} \
-        -cn ${COMMON_NAME} \
-        -z ${CERTIFICATE_ZONE}
+    exec vcert enroll -no-prompt {{#if cfg.cloud.auth.apikey ~}} -k ${CLOUD_APIKEY} {{/if ~}}{{#if cfg.tpp.auth.url ~}} -tpp-user ${TPP_USER} -tpp-password ${TPP_PASSWORD} -u ${TPP_URL} {{/if ~}} -z "{{ cfg.zone }}" -cert-file ${CERT_PATH} -key-file ${KEY_PATH} -chain-file ${CHAIN_PATH} -cn ${COMMON_NAME} -pickup-id-file ${ID_PATH} {{#if cfg.tpp.device.register ~}}-instance ${INSTANCE} -replace-instance -app-info ${APP_INFO} -tls-address ${TLS_ADDRESS}{{/if ~}}
+    
+    # TODO: This 'echo' command is filler because the "if" helper
+    # On the previous line pulls the curly brace that closes the
+    # function to the previous line (invalid shell syntax). 
+    # Remove when this is resolved.
+    echo "Proceeding to renewal check."
 }
 
 function renew_cert() {
-    # Renew the SSL cert
-    exec vcert renew -no-prompt \
-        -tpp-url ${TPP_URL} \
-        -tpp-user ${TPP_USER} \
-        -tpp-password ${TPP_PASSWORD} \
-        -cert-file ${CERT_PATH} \
-        -key-file ${KEY_PATH} \
-        -chain-file ${CHAIN_PATH} \
-        -id ${CERT_ID} \
-        -z ${CERTIFICATE_ZONE}
+    exec vcert renew -no-prompt {{#if cfg.cloud.auth.apikey ~}} -k ${CLOUD_APIKEY} {{/if ~}} {{#if cfg.tpp.auth.url ~}} -tpp-url ${TPP_URL} -tpp-user ${TPP_USER} -tpp-password ${TPP_PASSWORD} {{/if ~}} -cert-file ${CERT_PATH} -key-file ${KEY_PATH} -chain-file ${CHAIN_PATH} -id file:${ID_PATH} -z "{{ cfg.zone }}"
 }
 
 function update_cert_config() {
@@ -71,65 +67,13 @@ function update_cert_config() {
 }
 
 function check_expiry() {
-    # Use Python to extract the client token for authentication
-    tpp_token=$(curl -s -L \
-            -H 'Content-Type: application/json' \
-            -X POST \
-            -d '{"Username":"'"$TPP_USER"'","Password":"'"$TPP_PASSWORD"'"}' \
-            $TPP_URL/authorize | python -c "import sys, json; print json.load(sys.stdin)['APIKey']")
-
-    # Get Certs
-    cert_json=$(curl -s -L \
-            -H 'Content-Type: application/json' \
-            -H 'X-Venafi-API-Key: '$tpp_token \
-            $TPP_URL/certificates?cn=${COMMON_NAME})
-    echo $cert_json
-
-    valid_to=0
-    while IFS="|" read -r dn x509; do
-        if [ "$dn" = "\\VED\\Policy\\${CERTIFICATE_ZONE}\\${COMMON_NAME}" ]; then
-            # Extract only the date portion, 'date' has a weird bug of breaking on ':' from a bash script
-            valid_to=$(jq --raw-output '.ValidTo' <<< "$x509" | cut -c1-10)
-        fi
-    done< <(jq --raw-output '.Certificates[] | "\(.DN)|\(.X509)"' <<< "$cert_json")
-
-    # Convert to seconds
-    valid_to=$(exec date -d "$valid_to" +%s)
+    valid_to=$(cut -d "=" -f2 <<< $(openssl x509 -enddate -noout -in ${CERT_PATH}))
+    valid_to_epoch=$(date -d "${valid_to}" +"%s")
     curr_date=$(exec date "+%s")
-
-    if (({{ cfg.tpp.renew-threshold }} * 86400 + curr_date > valid_to)); then
+    if (({{ cfg.renew-threshold }} * 86400 + curr_date > valid_to_epoch)); then
         echo "Renewing expiring cert:"
-        renew_cert
+        renew_cert   
     fi
-}
-
-function create_dependencies() {
-    tpp_token=$(curl -s -L \
-        -H 'Content-Type: application/json' \
-        -X POST \
-        -d '{"Username":"'"$TPP_USER"'","Password":"'"$TPP_PASSWORD"'"}' \
-        $TPP_URL/authorize | python -c "import sys, json; print json.load(sys.stdin)['APIKey']")
-
-    device_creation=$(curl -s -L \
-        -H 'Content-Type: application/json' \
-        -H 'X-Venafi-API-Key: '$tpp_token \
-        -X POST \
-        -d '{ "ObjectDN": "'"$DEVICE_CREATION_DN"'", "Class": "Device", "NamedAttributeList": [ { "Name": "Description", "Value": "{{sys.hostname}} is managed by venafi-helper." } ] }' $TPP_URL/Config/Create )
-    echo $device_creation
-
-    application_creation=$(curl -s -L \
-        -H 'Content-Type: application/json' \
-        -H 'X-Venafi-API-Key: '$tpp_token \
-        -X POST \
-        -d '{ "ObjectDN": "'"$APP_CREATION_DN"'", "Class": "Basic", "NamedAttributeList": [ { "Name": "Description", "Value": "Basic app for certificate '${COMMON_NAME}'" }, { "Name": "Disabled", "Value": "0" } ] }' $TPP_URL/Config/Create )
-    echo $application_creation
-
-    associate_certs=$(curl -s -L \
-        -H 'Content-Type: application/json' \
-        -H 'X-Venafi-API-Key: '$tpp_token \
-        -X POST \
-        -d '{ "ApplicationDN": ["'"$APP_CREATION_DN"'"], "CertificateDN": "'"$CERT_ID"'" }' $TPP_URL/Certificates/Associate )
-    echo $associate_certs
 }
 
 if [ ! -f ${CERT_PATH}  ]; then
@@ -138,17 +82,8 @@ if [ ! -f ${CERT_PATH}  ]; then
     enroll_new_cert
 fi
 
-if test -f "createdeps.tmp"; then
-    create_dependencies
-    rm -f createdeps.tmp
-fi
-
 update_cert_config
 check_expiry
-sleep $(({{ cfg.tpp.expiry-check }} * 86400))
+sleep $(({{ cfg.expiry-check }} * 86400))
 
-echo "Check complete. Sleeping for {{ cfg.tpp.expiry-check }} days"
-
-{{#each cfg.servers as |server| ~}}
-   echo "{{server.apache.zone}}"
-{{/each ~}}
+echo "Check complete. Sleeping for {{ cfg.expiry-check }} days"
