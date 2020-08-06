@@ -84,6 +84,5 @@ fi
 
 update_cert_config
 check_expiry
-sleep $(({{ cfg.expiry-check }} * 86400))
-
 echo "Check complete. Sleeping for {{ cfg.expiry-check }} days"
+sleep $(({{ cfg.expiry-check }} * 86400))
