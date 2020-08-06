@@ -2,15 +2,15 @@
 exec 2>&1
 
 # Set credentials
-{{#unless cfg.tpp.auth.url ~}}
+{{#if cfg.tpp.auth.url ~}}
 TPP_URL="{{ cfg.tpp.auth.url }}"
 TPP_USER="{{ cfg.tpp.auth.user }}"
 TPP_PASSWORD="{{ cfg.tpp.auth.password }}"
-{{/unless}}
+{{/if}}
 COMMON_NAME="{{ cfg.cn }}"
-{{#unless cfg.cloud.auth.apikey ~}}
+{{#if cfg.cloud.auth.apikey ~}}
 CLOUD_APIKEY="{{ cfg.cloud.auth.apikey }}"
-{{/unless}}
+{{/if}}
 
 # Set device information
 APP_INFO="{{ cfg.tpp.device.app-info }}"
