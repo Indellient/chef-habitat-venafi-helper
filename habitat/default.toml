@@ -2,27 +2,27 @@
 # Official VCert documentation for details on these settings:
 # https://support.venafi.com/hc/en-us/articles/360037087552-Info-Venafi-Trust-Protection-Platform-19-4-Is-Released
 
-# Universal Settings
-cn = "my_common_name"
-zone = "my_zone"
-renew-threshold = 14
-expiry-check = 1
+    # Universal Settings
+    cn = "my_common_name"
+    zone = "my_zone"
+    renew-threshold = 14
+    expiry-check = 1
 
-# Venafi TPP-Only Settings
-[tpp]
-    [tpp.auth]
-    # url = "my_url"
-    # user = "my_username"
-    # password = "my_password"
-    # token = "my_token"
+    # Venafi TPP-Only Settings
+    # [tpp]
+    #     [tpp.auth]
+        # url = "my_url"
+        # user = "my_username"
+        # password = "my_password"
+        # token = "my_token"
 
-    [tpp.device]
-    register = "false"
-    # tls_port = 443
-    # tls_address = "myapp.example.com"
-    # app-name = "my_app"
-    # app-info = "my_app_info"
+        # [tpp.device]
+        # register = "false"
+        # tls_port = 443
+        # tls_address = "myapp.example.com"
+        # app-name = "my_app"
+        # app-info = "my_app_info"
 
-# Venafi Cloud-Only Settings
-# [cloud.auth]
-    # apikey = "my_apikey"
+    # Venafi Cloud-Only Settings
+    # [cloud.auth]
+        # apikey = "my_apikey"
