@@ -1,10 +1,10 @@
 pkg_name=vcert
 pkg_origin=indellient
-pkg_version="4.1.0"
+pkg_version="4.9.6"
 pkg_license=("Apache-2.0")
-pkg_source="https://github.com/Venafi/${pkg_name}/releases/download/v${pkg_version}/vcert86_linux"
+pkg_source="https://github.com/Venafi/vcert/releases/download/v4.9.6/vcert-v4.9.6+895_linux86"
 pkg_filename="vcert"
-pkg_shasum="f16ce62802bde9d9ecc23a42911575b193d09fb6fadf84a6a7991a11a8a2b257"
+pkg_shasum="6be4059df6faadd2da21aebc01ce1f8942b5107cc909cc05bf2c430044983152"
 pkg_deps=(core/glibc core/gcc-libs)
 pkg_bin_dirs=(bin)
 pkg_description="Venafi helper tool for managing SSL certs"

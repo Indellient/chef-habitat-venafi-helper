@@ -1,17 +1,28 @@
-# This file contains the variables needed for configuring the service
-# url: The url to your Venafi SDK endpoint (e.g. "https://bla.dev.lab.venafi.com/vedsdk")
-# user: The username you use to authenticate with the sdk
-# password: The password you use to authenticate with the sdk
-# cn: The common name of your certificate (e.g. "bla.example.com")
-# zone: The zone of your certificate (e.g. "Certificates\\\\Bla")
-# renew-threshold: The amount of days away from the expiry date to trigger a renewal request
-# expiry-check: The interval for checking how close the day is to the 'renew-threshold' date, in days
+# This file contains the variables needed for configuring the service. See README or 
+# Official VCert documentation for details on these settings:
+# https://support.venafi.com/hc/en-us/articles/360037087552-Info-Venafi-Trust-Protection-Platform-19-4-Is-Released
 
-[tpp]
-url = "my_url"
-user = "my_username"
-password = "my_password"
-cn = "my_common_name"
-zone = "my_zone"
-renew-threshold = 14
-expiry-check = 1
+    # Universal Settings
+    cn = "my_common_name"
+    zone = "my_zone"
+    renew-threshold = 14
+    expiry-check = 1
+
+    # Venafi TPP-Only Settings
+    # [tpp]
+    #     [tpp.auth]
+        # url = "my_url"
+        # user = "my_username"
+        # password = "my_password"
+        # token = "my_token"
+
+        # [tpp.device]
+        # register = "false"
+        # tls_port = 443
+        # tls_address = "myapp.example.com"
+        # app-name = "my_app"
+        # app-info = "my_app_info"
+
+    # Venafi Cloud-Only Settings
+    # [cloud.auth]
+        # apikey = "my_apikey"

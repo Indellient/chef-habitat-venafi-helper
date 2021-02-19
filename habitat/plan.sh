@@ -1,12 +1,13 @@
 pkg_name=venafi-helper
 pkg_origin=indellient
-pkg_version="0.3.0"
+pkg_version="0.4.1"
 pkg_license=("Apache-2.0")
 
 pkg_deps=(
   core/curl
   core/python2
   core/glibc
+  core/openssl
   core/cacerts
   core/jq-static
   indellient/vcert
