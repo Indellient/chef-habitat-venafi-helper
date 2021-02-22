@@ -63,7 +63,6 @@ expiry-check = 1
 	url = "my_url"
 	user = "my_username"
 	password = "my_password"
-	token = "my_token"
 
 	[tpp.device]
 	register = "false"
