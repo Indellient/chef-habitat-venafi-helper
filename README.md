@@ -51,16 +51,37 @@ For the third step, load the package you build along with a bind to the venafi-h
 This example demo run will outline running venafi-helper with a demo file using a stable version of venafi-helper and the venafi-tomcat-demo package. 
 
 #### Preparation 
-Before running the demo, create a `user.toml` file wherever you intend to enter hab studio from, this can typically be on the Desktop, or in a folder. In the user.toml, replace the placeholders with the correct info and then save the file:
+Before running the demo, create a `user.toml` file wherever you intend to enter hab studio from, this can typically be on the Desktop, or in a folder. In the user.toml, replace the placeholders with the correct info and then save the file. Depending on the environment you will be connecting to, your configuration may be set for TPP:
 ```
-[tpp]
-url = "my_url"
-user = "my_username"
-password = "my_password"
 cn = "my_common_name"
 zone = "my_zone"
 renew-threshold = 14
 expiry-check = 1
+
+[tpp]
+	[tpp.auth]
+	url = "my_url"
+	user = "my_username"
+	password = "my_password"
+
+	[tpp.device]
+	register = "false"
+	tls_port = 443
+	tls_address = "myapp.example.com"
+	app-name = "my_app"
+	app-info = "my_app_info"
+```
+
+Or cloud:
+```
+cn = "my_common_name"
+zone = "my_zone"
+renew-threshold = 14
+expiry-check = 1
+
+[cloud.auth]
+	apikey = "my_apikey"
+
 ```
 
 #### Steps
