@@ -61,8 +61,9 @@ expiry-check = 1
 [tpp]
 	[tpp.auth]
 	url = "my_url"
-	user = "my_username"
-	password = "my_password"
+	#user = "my_username" #user/password is deprecated
+	#password = "my_password"
+	token = "my_token"
 
 	[tpp.device]
 	register = "false"

@@ -1,6 +1,6 @@
 pkg_name=venafi-helper
 pkg_origin=indellient
-pkg_version="0.4.1"
+pkg_version="0.4.2"
 pkg_license=("Apache-2.0")
 
 pkg_deps=(

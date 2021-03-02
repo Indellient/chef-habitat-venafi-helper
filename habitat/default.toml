@@ -12,7 +12,7 @@
     # [tpp]
     #     [tpp.auth]
         # url = "my_url"
-        # user = "my_username"
+        # user = "my_username" #user/password is deprecated
         # password = "my_password"
         # token = "my_token"
 
