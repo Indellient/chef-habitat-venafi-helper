@@ -6,6 +6,7 @@ exec 2>&1
 TPP_URL="{{ cfg.tpp.auth.url }}"
 TPP_USER="{{ cfg.tpp.auth.user }}"
 TPP_PASSWORD="{{ cfg.tpp.auth.password }}"
+TPP_TOKEN="{{ cfg.tpp.auth.token }}"
 {{/if}}
 COMMON_NAME="{{ cfg.cn }}"
 {{#if cfg.cloud.auth.apikey ~}}
@@ -40,7 +41,7 @@ export SSL_CERT_FILE
 
 # https://support.venafi.com/hc/en-us/articles/217991528-Introducing-VCert-API-Abstraction-for-DevOps
 function enroll_new_cert() {
-    exec vcert enroll -no-prompt {{#if cfg.cloud.auth.apikey ~}} -k ${CLOUD_APIKEY} {{/if ~}}{{#if cfg.tpp.auth.url ~}} -tpp-user ${TPP_USER} -tpp-password ${TPP_PASSWORD} -u ${TPP_URL} {{/if ~}} -z "{{ cfg.zone }}" -cert-file ${CERT_PATH} -key-file ${KEY_PATH} -chain-file ${CHAIN_PATH} -cn ${COMMON_NAME} -pickup-id-file ${ID_PATH} {{#if cfg.tpp.device.register ~}}-instance ${INSTANCE} -replace-instance -app-info ${APP_INFO} -tls-address ${TLS_ADDRESS}{{/if ~}}
+    exec vcert enroll -no-prompt {{#if cfg.cloud.auth.apikey ~}} -k ${CLOUD_APIKEY} {{/if ~}}{{#if cfg.tpp.auth.url ~}}{{#if cfg.tpp.auth.token ~}} -t ${TPP_TOKEN} {{/if ~}}{{#if cfg.tpp.auth.user ~}} -tpp-user ${TPP_USER} -tpp-password ${TPP_PASSWORD} {{/if ~}} -u ${TPP_URL} {{/if ~}} -z "{{ cfg.zone }}" -cert-file ${CERT_PATH} -key-file ${KEY_PATH} -chain-file ${CHAIN_PATH} -cn ${COMMON_NAME} -pickup-id-file ${ID_PATH} {{#if cfg.tpp.device.register ~}}-instance ${INSTANCE} -replace-instance -app-info ${APP_INFO} -tls-address ${TLS_ADDRESS}{{/if ~}}
     
     # TODO: This 'echo' command is filler because the "if" helper
     # On the previous line pulls the curly brace that closes the
@@ -50,7 +51,7 @@ function enroll_new_cert() {
 }
 
 function renew_cert() {
-    exec vcert renew -no-prompt {{#if cfg.cloud.auth.apikey ~}} -k ${CLOUD_APIKEY} {{/if ~}} {{#if cfg.tpp.auth.url ~}} -tpp-url ${TPP_URL} -tpp-user ${TPP_USER} -tpp-password ${TPP_PASSWORD} {{/if ~}} -cert-file ${CERT_PATH} -key-file ${KEY_PATH} -chain-file ${CHAIN_PATH} -id file:${ID_PATH} -z "{{ cfg.zone }}"
+    exec vcert renew -no-prompt {{#if cfg.cloud.auth.apikey ~}} -k ${CLOUD_APIKEY} {{/if ~}} {{#if cfg.tpp.auth.url ~}} -tpp-url ${TPP_URL} {{#if cfg.tpp.auth.token ~}} -t ${TPP_TOKEN} {{/if ~}}{{#if cfg.tpp.auth.user ~}} -tpp-user ${TPP_USER} -tpp-password ${TPP_PASSWORD} {{/if ~}}{{/if ~}} -cert-file ${CERT_PATH} -key-file ${KEY_PATH} -chain-file ${CHAIN_PATH} -id file:${ID_PATH} -z "{{ cfg.zone }}"
 }
 
 function update_cert_config() {
