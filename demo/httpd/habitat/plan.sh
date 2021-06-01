@@ -1,5 +1,5 @@
 pkg_name="venafi-httpd-demo"
-pkg_origin="aumkarpraja"
+pkg_origin="indellient"
 pkg_version="0.1.0"
 pkg_maintainer="support@indellient.com"
 pkg_svc_user="root"
