@@ -70,7 +70,6 @@ expiry-check = 1
 	tls_port = 443
 	tls_address = "myapp.example.com"
 	app-name = "my_app"
-	app-info = "my_app_info"
 ```
 
 Or cloud:

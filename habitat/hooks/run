@@ -14,7 +14,7 @@ CLOUD_APIKEY="{{ cfg.cloud.auth.apikey }}"
 {{/if}}
 
 # Set device information
-APP_INFO="{{ cfg.tpp.device.app-info }}"
+APP_INFO="Indellient-ChefHabitat-Helper"
 INSTANCE="{{ sys.hostname }}{{#if cfg.tpp.device.app-name ~}}:{{ cfg.tpp.device.app-name }}{{/if ~}}"
 {{#unless cfg.tpp.device.tls_address ~}}
 TLS_ADDRESS="{{ sys.ip }}:{{ cfg.tpp.device.tls_port }}"
